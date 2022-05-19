@@ -3,6 +3,7 @@ import os
 import model_utils
 import preprocessor
 from datetime import datetime
+import tensorflow as tf
 
 def parse_args():
     args = sys.argv[1:]
@@ -34,9 +35,9 @@ def LOG(message):
     init = '\u001b[33mLOG: \u001b[0m'
     print(init+message)
 
-if __name__ == '__main__':
-    args = parse_args()
-    
+def main(args):
+    LOG(f'Using tensorflow version {tf.__version__}')
+
     # Load paths for input images
     if 'input' not in args:
         raise Exception('The path for input images has to be specified')
@@ -56,7 +57,7 @@ if __name__ == '__main__':
     
     # Load the model
     LOG('Loading model')
-    model = model_utils.load_weights(model_utils.build_new_model(), args['model'])
+    model = model_utils.load_model(args['model'])
     
     # Compile model
     LOG('Compiling model')
@@ -67,7 +68,11 @@ if __name__ == '__main__':
         LOG(f'Running inference on image {inp}')
         img = preprocessor.load_image(os.path.join(args['input'], inp))
         predicted = model_utils.run_inference(model, img)
-        colored = preprocess.color_image(img, predicted, value=0.7)
+        colored = preprocessor.color_image(img, predicted, value=0.7)
         preprocessor.save_image(colored, os.path.join(args['output'], inp))
     
     LOG('Finished successfuly')
+
+if __name__ == '__main__':
+    args = parse_args()
+    main(args)

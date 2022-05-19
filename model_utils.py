@@ -69,18 +69,11 @@ def build_new_model():
 
     return model
 
-def load_weights(model, path):
+def load_model(path):
     """
     Loads the TF model from the specified path
     """
-    global MODEL_LAYERS
-    saved_model = tf.keras.models.load_model(path)
-    model = build_new_model()
-
-    for i in range(MODEL_LAYERS):
-        model.layers[i].set_weights(saved_model.layers[i].get_weights())
-
-    return model
+    return tf.keras.models.load_model(path)
 
 def create_dataset(path, files):
     """
