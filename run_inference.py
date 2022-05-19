@@ -56,7 +56,7 @@ if __name__ == '__main__':
     
     # Load the model
     LOG('Loading model')
-    model = model_utils.load_model(args['model'])
+    model = model_utils.load_weights(model_utils.build_new_model(), args['model'])
     
     # Compile model
     LOG('Compiling model')
@@ -67,6 +67,7 @@ if __name__ == '__main__':
         LOG(f'Running inference on image {inp}')
         img = preprocessor.load_image(os.path.join(args['input'], inp))
         predicted = model_utils.run_inference(model, img)
-        preprocessor.save_image(predicted, os.path.join(args['output'], inp))
+        colored = preprocess.color_image(img, predicted, value=0.7)
+        preprocessor.save_image(colored, os.path.join(args['output'], inp))
     
     LOG('Finished successfuly')

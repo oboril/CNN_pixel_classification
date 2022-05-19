@@ -38,6 +38,7 @@ def get_all_annotated_images(path):
     files = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path,f))]
 
     files = filter(lambda f : f.split('.')[-1] in ['jpg', 'png', 'tiff', 'tif'], files)
+    files = list(files)
 
     valid = set()
 
@@ -64,6 +65,7 @@ if __name__ == '__main__':
     train_paths = get_all_annotated_images(args['training-images'])
 
     LOG(f'{len(train_paths)} training images have been found')
+    print(train_paths)
 
     # Check the save-model path is specified
     if 'save-model' not in args:
@@ -78,13 +80,14 @@ if __name__ == '__main__':
         f.write(f'Starting run at {datetime.now()}')
         LOG('Created log file')
 
-    # Load or create model
+    # Create model and load weights
+    LOG('Creating new model')
+    model = model_utils.build_new_model()
+
     if 'load-model' in args:
-        LOG('Loading model')
-        model = model_utils.load_model(args['load-model'])
-    else:
-        LOG('Creating new model')
-        model = model_utils.build_new_model()
+        LOG('Loading weights')
+        model = model_utils.load_weights(model, args['load-model'])
+        
 
     # Load the training dataset
     LOG('Loading images')
@@ -93,7 +96,7 @@ if __name__ == '__main__':
 
     # Compile model
     LOG('Compiling model')
-    model_utils.compile_model(model, class_counts[0]/class_counts[1])
+    model_utils.compile_model(model, classes_ratio=class_counts[0]/class_counts[1], learning_rate=0.001)
 
     # Fit model
     LOG('Training model')

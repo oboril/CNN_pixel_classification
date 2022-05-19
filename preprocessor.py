@@ -87,8 +87,8 @@ def load_annotated(file_path):
 
     r,g,b = np.transpose(img, (2,0,1))
 
-    mask = np.where((r > 150) & (g > 150) & (b < 100), 1., 0.)
-    mask += np.where((r < 100) & (g > 150) & (b > 150), 2., 0.)
+    mask = np.where((r > 150) & (g > 150) & (b < 100), 1, 0)
+    mask += np.where((r < 100) & (g > 150) & (b > 150), 2, 0)
 
     return mask.astype(np.uint8)
 

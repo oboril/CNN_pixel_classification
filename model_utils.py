@@ -6,6 +6,8 @@ import os
 IMG_SHAPE = (1944, 2592)
 SHAPE = IMG_SHAPE+(1,)
 
+MODEL_LAYERS = 5
+
 def get_loss(classes_ratio):
     """
     Custom binary crossentropy loss for classes:
@@ -16,7 +18,7 @@ def get_loss(classes_ratio):
     classes_ratio = # class 1 / # class 2
     """
     ratio = np.sqrt(classes_ratio)
-    print(f'Label ratio: {ratio**2}')
+
     def custom_loss(y_true, y_pred):
         cl1 = tf.where(tf.equal(y_true, 1), y_pred, 0)
         cl2 = tf.where(tf.equal(y_true, 2), 1-y_pred, 0)
@@ -24,8 +26,8 @@ def get_loss(classes_ratio):
 
     return custom_loss
 
-def compile_model(model, classes_ratio):
-    optimizer = tf.keras.optimizers.Adamax(learning_rate = 0.001)
+def compile_model(model, classes_ratio=1., learning_rate=0.001):
+    optimizer = tf.keras.optimizers.Adamax(learning_rate = learning_rate)
     model.compile(optimizer=optimizer, loss=get_loss(classes_ratio))
 
 def build_new_model():
@@ -67,11 +69,17 @@ def build_new_model():
 
     return model
 
-def load_model(path):
+def load_weights(model, path):
     """
     Loads the TF model from the specified path
     """
-    model = tf.keras.models.load_model(path)
+    global MODEL_LAYERS
+    saved_model = tf.keras.models.load_model(path)
+    model = build_new_model()
+
+    for i in range(MODEL_LAYERS):
+        model.layers[i].set_weights(saved_model.layers[i].get_weights())
+
     return model
 
 def create_dataset(path, files):
@@ -100,8 +108,8 @@ def create_dataset(path, files):
         if img.shape != IMG_SHAPE:
             raise Exception(f'The annotated image {f} has invalid shape {img.shape}')
         annotated_imgs.append(img)
-        class1 += np.sum(np.where(img == 1))
-        class2 += np.sum(np.where(img == 2))
+        class1 += np.sum(img == 1)
+        class2 += np.sum(img == 2)
 
     
     train_imgs = np.array(train_imgs).reshape((NUM_IMAGES, *IMG_SHAPE, 1))
